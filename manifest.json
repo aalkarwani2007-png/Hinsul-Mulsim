@@ -16,26 +16,16 @@
       "purpose": "any"
     },
     {
-      "src": "icoon.png",
-      "sizes": "256x256",
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "screen1.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Home Scherm"
+      "purpose": "any"
     },
     {
-      "src": "screen2.png",
-      "sizes": "1080x1920",
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Dua Overzicht"
+      "purpose": "maskable"
     }
   ]
 }

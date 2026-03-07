@@ -1,15 +1,16 @@
 {
-  "short_name": "Hisnul Muslim",
-  "name": "Hisnul Muslim - Vesting van de Moslim",
+  "name": "Hisnul Muslim",
+  "short_name": "Hisn",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#07080f",
+  "theme_color": "#07080f",
   "icons": [
     {
       "src": "icoon.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "sizes": "512x512"
+      "purpose": "any maskable"
     }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#07080f",
-  "background_color": "#07080f"
+  ]
 }

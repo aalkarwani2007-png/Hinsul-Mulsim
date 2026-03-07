@@ -1,14 +1,23 @@
-"icons": [
-  {
-    "src": "icoon.png",
-    "sizes": "512x512",
-    "type": "image/png",
-    "purpose": "any"
-  },
-  {
-    "src": "icoon.png",
-    "sizes": "512x512",
-    "type": "image/png",
-    "purpose": "maskable"
-  }
-]
+{
+  "name": "حصن المسلم · Hisnul Muslim",
+  "short_name": "Hisn",
+  "description": "De complete islamitische smeekbeden app.",
+  "icons": [
+    {
+      "src": "icoon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icoon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#07080f",
+  "background_color": "#07080f"
+}

@@ -24,7 +24,9 @@ html, body {
     /* Verwijder overflow: hidden van de body! */
     overflow-x: hidden; 
 }
-
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
 body {
     display: flex;
     flex-direction: column;

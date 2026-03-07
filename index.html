@@ -18,29 +18,41 @@
 <meta property="og:description" content="De complete islamitische smeekbeden app — offline, vrij en betrouwbaar.">
 <style> /* 1. Zorg dat de app het volledige scherm gebruikt en niet verspringt */
 html, body {
-    height: 100vh;
-    height: -webkit-fill-available; /* Fix voor mobiele browsers */
-    overflow: hidden;
+    /* Gebruik min-height in plaats van height om scrollen toe te staan */
+    min-height: 100%;
     margin: 0;
+    /* Verwijder overflow: hidden van de body! */
+    overflow-x: hidden; 
 }
 
 body {
-    /* Safe area padding zorgt dat content niet onder de inkeping of home-balk valt */
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
     display: flex;
     flex-direction: column;
+    /* Zorg voor ruimte aan de onderkant voor de audiobalk */
+    padding-bottom: 120px; 
 }
 
-/* 2. Zorg dat de audiobalk ALTIJD boven de home-swipe-balk zweeft */
+/* Zorg dat de schermen zelf mogen scrollen */
+.screen {
+    display: none;
+    flex: 1;
+    overflow-y: visible; /* Verander dit naar visible */
+    position: relative;
+    z-index: 1;
+}
+
+.screen.on {
+    display: block; /* Gebruik block voor normale scroll-flow */
+}
 #abBar {
     position: fixed;
-    bottom: calc(env(safe-area-inset-bottom) + 10px) !important;
-    left: 10px;
-    right: 10px;
-    z-index: 1000;
-    /* Zorg dat de balk zelf ook wat extra ruimte heeft aan de onderkant */
-    padding-bottom: 5px; 
+    /* Gebruik de safe-area van de iPhone/Android */
+    bottom: calc(env(safe-area-inset-bottom) + 15px) !important;
+    left: 15px;
+    right: 15px;
+    z-index: 9999;
+    /* Zorg dat de balk opvalt */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
 :root{
   --bg:#07080f;--card:#0f1219;--card2:#141820;--border:rgba(201,168,76,0.16);

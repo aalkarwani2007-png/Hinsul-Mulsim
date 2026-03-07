@@ -40,7 +40,7 @@ body.sepia{
   --white:#e1e8f0;--dim:#8899ac;--dim2:#1e3a4a;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow:hidden;overflow-x:hidden;width:100%;}
+html,body{height:100%;overflow:hidden;overflow-x:hidden;width:100%;max-width:100vw;}
 body{font-family:"Nunito",sans-serif;background:var(--bg);color:var(--white);display:flex;flex-direction:column;transition:background .3s,color .3s;}
 body::before{content:"";position:fixed;inset:0;z-index:0;opacity:.025;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cg fill='none' stroke='%23c9a84c' stroke-width='0.6'%3E%3Cpolygon points='90,7 173,49 173,131 90,173 7,131 7,49'/%3E%3Cpolygon points='90,28 152,63 152,117 90,152 28,117 28,63'/%3E%3Ccircle cx='90' cy='90' r='22'/%3E%3C/g%3E%3C/svg%3E");
@@ -72,8 +72,8 @@ body.audio-playing .screen.on{padding-bottom:70px;}
 .dotd-nl{font-size:.65rem;color:var(--dim);line-height:1.5;font-style:italic;}
 .dotd-footer{font-size:.48rem;color:var(--goldD);margin-top:5px;}
 /* TOOLBAR */
-.toolbar{display:flex;gap:7px;padding:9px 12px;flex-shrink:0;position:sticky;top:0;z-index:10;
-  background:rgba(7,8,15,.93);backdrop-filter:blur(10px);}
+.toolbar{display:flex;gap:5px;padding:7px 10px;flex-shrink:0;position:sticky;top:0;z-index:10;
+  background:rgba(7,8,15,.93);backdrop-filter:blur(10px);overflow:hidden;}
 body.light .toolbar{background:rgba(245,240,232,.93);}
 body.sepia .toolbar{background:rgba(42,31,15,.93);}
 .sinp{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;
@@ -84,9 +84,10 @@ body.sepia .toolbar{background:rgba(42,31,15,.93);}
 .swrap{position:relative;flex:1;}
 .sico{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:.85rem;color:var(--dim);pointer-events:none;}
 .tbtn{background:var(--card);border:1px solid var(--border);color:var(--dim);
-  font-size:.68rem;padding:8px 10px;border-radius:10px;cursor:pointer;white-space:nowrap;
-  transition:all .15s;display:flex;align-items:center;gap:3px;flex-shrink:0;}
+  font-size:.65rem;padding:7px 8px;border-radius:10px;cursor:pointer;white-space:nowrap;
+  transition:all .15s;display:flex;align-items:center;gap:2px;flex-shrink:0;}
 .tbtn.active{background:var(--goldG);border-color:rgba(201,168,76,.35);color:var(--gold);}
+@media(max-width:390px){.sahih-txt{display:none;}.tbtn{padding:6px 7px;font-size:.6rem;}}
 /* GROUPS */
 .groups{display:flex;flex-direction:column;gap:0;padding:0 0 20px;}
 .group-header{padding:10px 14px 5px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border);cursor:default;}
@@ -271,7 +272,7 @@ body.sepia .toolbar{background:rgba(42,31,15,.93);}
   </div>
   <div class="toolbar">
     <div class="swrap"><span class="sico">&#128269;</span><input class="sinp" id="sinp" type="search" placeholder="Zoek dhikr... · ابحث عن دعاء..." oninput="doSearch(this.value)"></div>
-    <button class="tbtn" id="sahihBtn" onclick="toggleSahih()">&#10003; Sahih</button>
+    <button class="tbtn" id="sahihBtn" onclick="toggleSahih()"><span class="sahih-chk">&#10003;</span><span class="sahih-txt"> Sahih</span></button>
     <button class="tbtn" id="favBtn" onclick="showFavs()">&#9829;</button>
     <button class="tbtn" onclick="showTasbih()" title="Vrije Tasbih">&#128197;</button>
     <button class="tbtn" onclick="showRamadan()" title="Ramadan Tracker">&#127775;</button>

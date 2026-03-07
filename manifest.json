@@ -1,23 +1,25 @@
 {
-  "name": "حصن المسلم · Hisnul Muslim",
+  "id": "hisnul-muslim-pwa",
+  "name": "Hisnul Muslim",
   "short_name": "Hisn",
-  "description": "De complete islamitische smeekbeden app.",
+  "description": "Vesting van de Moslim - Smeekbeden en Adhkar",
+  "start_url": "index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07080f",
+  "theme_color": "#07080f",
   "icons": [
     {
       "src": "icoon.png",
-      "sizes": "192x192",
+      "sizes": "256x256",
       "type": "image/png",
       "purpose": "any"
     },
     {
       "src": "icoon.png",
-      "sizes": "512x512",
+      "sizes": "256x256",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "maskable"
     }
-  ],
-  "start_url": "./index.html",
-  "display": "standalone",
-  "theme_color": "#07080f",
-  "background_color": "#07080f"
+  ]
 }

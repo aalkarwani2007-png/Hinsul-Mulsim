@@ -6,17 +6,23 @@
   "start_url": "/Hinsul-Mulsim/index.html",
   "scope": "/Hinsul-Mulsim/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser",
+    "window-controls-overlay"
+  ],
   "orientation": "portrait",
   "background_color": "#07080f",
   "theme_color": "#07080f",
   "dir": "ltr",
   "lang": "nl",
-  "categories": ["lifestyle", "education"],
+  "categories": [
+    "lifestyle",
+    "education"
+  ],
   "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
   "prefer_related_applications": false,
-  "related_applications": [],
-  "scope_extensions": [],
   "icons": [
     {
       "src": "launchericon-192x192.png",

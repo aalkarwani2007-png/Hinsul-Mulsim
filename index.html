@@ -2,9 +2,13 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>حصن المسلم · Hisnul Muslim</title>
 <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="apple-touch-icon" href="icoon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Hisnul Muslim">
@@ -12,7 +16,32 @@
 <meta name="description" content="حصن المسلم — Vesting van de Moslim. Volledige dhikr app met 99 Namen, 40 Hadith en alle smeekbeden uit Hisnul Muslim.">
 <meta property="og:title" content="حِصْنُ الْمُسْلِمِ · Hisnul Muslim">
 <meta property="og:description" content="De complete islamitische smeekbeden app — offline, vrij en betrouwbaar.">
-<style>
+<style> /* 1. Zorg dat de app het volledige scherm gebruikt en niet verspringt */
+html, body {
+    height: 100vh;
+    height: -webkit-fill-available; /* Fix voor mobiele browsers */
+    overflow: hidden;
+    margin: 0;
+}
+
+body {
+    /* Safe area padding zorgt dat content niet onder de inkeping of home-balk valt */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    display: flex;
+    flex-direction: column;
+}
+
+/* 2. Zorg dat de audiobalk ALTIJD boven de home-swipe-balk zweeft */
+#abBar {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom) + 10px) !important;
+    left: 10px;
+    right: 10px;
+    z-index: 1000;
+    /* Zorg dat de balk zelf ook wat extra ruimte heeft aan de onderkant */
+    padding-bottom: 5px; 
+}
 :root{
   --bg:#07080f;--card:#0f1219;--card2:#141820;--border:rgba(201,168,76,0.16);
   --gold:#c9a84c;--gold2:#e8c97a;--goldD:#7a6030;--goldG:rgba(201,168,76,0.09);
@@ -20,6 +49,10 @@
   --green:#3d8060;--greenL:#58b085;--blue:#2e6ea6;--blueL:#4fa0dc;
   --red:#a03030;--redL:#d05050;--orange:#a06020;--orangeL:#d08030;
   --ar-size:clamp(1.2rem,3.8vw,1.65rem);
+}
+ /* Zorg dat de lijst met dua's niet stopt achter de audiobalk */
+.screen {
+    padding-bottom: 120px !important; /* Ruimte voor de zwevende balk */
 }
 body.light{
   --bg:#f5f0e8;--card:#fff;--card2:#f0ebe0;--border:rgba(120,90,30,0.18);

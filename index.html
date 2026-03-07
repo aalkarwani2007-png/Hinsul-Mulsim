@@ -1596,6 +1596,7 @@ function audioToggle(){
     if(btn){btn.innerHTML="&#9654;";btn.classList.remove("active");}
   }
 }
+<script>
 function audioPrev(){
   if(_auIdx>0){_auIdx--;_auDua=_auList[_auIdx];var cat=allCats().find(function(c){return c.id===_auCat;});_startAudio(_auDua,cat);}
 }
@@ -1612,7 +1613,7 @@ function audioClose(){
 
 <div class="audio-bar" id="abBar">
   <div class="ab-progress"><span id="abProg"></span></div>
-  <div class="ab-ar" id="abAr"></div>
+  <div class="ab-ar" id="abText"></div> 
   <div class="ab-ctrl">
     <button onclick="audioPrev()">&#9664;</button>
     <button onclick="audioToggle()" id="abPlay">&#9654;</button>
@@ -1620,5 +1621,14 @@ function audioClose(){
     <button onclick="audioClose()">&#10005;</button>
   </div>
 </div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log("Service Worker Geregistreerd!"))
+      .catch(err => console.log("Service Worker Fout:", err));
+  }
+</script>
+
 </body>
 </html>

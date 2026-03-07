@@ -2,12 +2,17 @@
   "id": "hisnul-muslim-pwa",
   "name": "Hisnul Muslim",
   "short_name": "Hisn",
-  "description": "Vesting van de Moslim - Smeekbeden en Adhkar",
+  "description": "Vesting van de Moslim - Smeekbeden en Adhkar uit Koran en Sunnah",
   "start_url": "index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#07080f",
   "theme_color": "#07080f",
+  "categories": [
+    "lifestyle",
+    "education"
+  ],
+  "lang": "nl",
   "icons": [
     {
       "src": "launchericon-192x192.png",
@@ -26,6 +31,22 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "launchericon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Hisnul Muslim - Hoofdscherm"
+    },
+    {
+      "src": "launchericon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Hisnul Muslim - Dhikr weergave"
     }
   ]
 }

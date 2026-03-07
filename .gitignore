@@ -1,1 +1,13 @@
+# Windows tijdelijke bestanden
+Thumbs.db
+Desktop.ini
 
+# Mac tijdelijke bestanden
+.DS_Store
+
+# Logs
+*.log
+
+# Indien je met een editor werkt (zoals VS Code)
+.vscode/
+.idea/

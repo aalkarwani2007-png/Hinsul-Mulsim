@@ -4,15 +4,25 @@
   "short_name": "Hisn",
   "description": "Vesting van de Moslim - Smeekbeden en Adhkar uit Koran en Sunnah",
   "start_url": "index.html",
+  "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
   "orientation": "portrait",
   "background_color": "#07080f",
   "theme_color": "#07080f",
+  "dir": "ltr",
+  "lang": "nl",
   "categories": [
     "lifestyle",
     "education"
   ],
-  "lang": "nl",
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "prefer_related_applications": false,
+  "related_applications": [],
   "icons": [
     {
       "src": "launchericon-192x192.png",
@@ -39,14 +49,14 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Hisnul Muslim - Hoofdscherm"
+      "label": "Hisnul Muslim - Hoofdscherm (mobiel)"
     },
     {
       "src": "launchericon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Hisnul Muslim - Dhikr weergave"
+      "form_factor": "wide",
+      "label": "Hisnul Muslim - Hoofdscherm (desktop)"
     }
   ]
 }

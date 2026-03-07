@@ -1,72 +1,26 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>حصن المسلم · Hisnul Muslim</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="launchericon-192x192.png">
-    <link rel="icon" type="image/png" href="launchericon-192x192.png">
-
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Hisnul Muslim">
-    <meta name="theme-color" content="#07080f">
-    <meta name="description" content="حصن المسلم — Vesting van de Moslim. Volledige dhikr app met 99 Namen, 40 Hadith en alle smeekbeden uit Hisnul Muslim.">
-    
-    <meta property="og:title" content="حِصْنُ الْمُسْلِمِ · Hisnul Muslim">
-    <meta property="og:description" content="De complete islamitische smeekbeden app — offline, vrij en betrouwbaar.">
-
-    <style>
-    /* 1. Zorg dat de app het volledige scherm gebruikt en niet verspringt */
-    html, body {
-        min-height: 100%;
-        margin: 0;
-        overflow-x: hidden; 
-    }
-
-    body {
-        display: flex;
-        flex-direction: column;
-        padding-bottom: 120px; 
-    }
-
-    /* Zorg dat de schermen zelf mogen scrollen */
-    .screen {
-        display: none;
-        flex: 1;
-        overflow-y: visible;
-        position: relative;
-        z-index: 1;
-    }
-
-    .screen.on {
-        display: block;
-    }
-
-    #abBar {
-        position: fixed;
-        bottom: calc(env(safe-area-inset-bottom) + 15px) !important;
-        left: 15px;
-        right: 15px;
-        z-index: 9999;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-
-    :root {
-        --bg:#07080f;--card:#0f1219;--card2:#141820;--border:rgba(201,168,76,0.16);
-        --gold:#c9a84c;--gold2:#e8c97a;--goldD:#7a6030;--goldG:rgba(201,168,76,0.09);
-        --white:#ede8de;--dim:#6e6a60;--dim2:#3a3830;
-        --green:#3d8060;--greenL:#58b085;--blue:#2e6ea6;--blueL:#4fa0dc;
-        --red:#a03030;--redL:#d05050;--orange:#a06020;--orangeL:#d08030;
-        --ar-size:clamp(1.2rem,3.8vw,1.65rem);
-}
- /* Zorg dat de lijst met dua's niet stopt achter de audiobalk */
-.screen {
-    padding-bottom: 120px !important; /* Ruimte voor de zwevende balk */
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>حصن المسلم · Hisnul Muslim</title>
+<link href="https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hisnul Muslim">
+<link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#07080f">
+<meta name="description" content="حصن المسلم — Vesting van de Moslim. Volledige dhikr app met 99 Namen, 40 Hadith en alle smeekbeden uit Hisnul Muslim.">
+<meta property="og:title" content="حِصْنُ الْمُسْلِمِ · Hisnul Muslim">
+<meta property="og:description" content="De complete islamitische smeekbeden app — offline, vrij en betrouwbaar.">
+<style>
+:root{
+  --bg:#07080f;--card:#0f1219;--card2:#141820;--border:rgba(201,168,76,0.16);
+  --gold:#c9a84c;--gold2:#e8c97a;--goldD:#7a6030;--goldG:rgba(201,168,76,0.09);
+  --white:#ede8de;--dim:#6e6a60;--dim2:#3a3830;
+  --green:#3d8060;--greenL:#58b085;--blue:#2e6ea6;--blueL:#4fa0dc;
+  --red:#a03030;--redL:#d05050;--orange:#a06020;--orangeL:#d08030;
+  --ar-size:clamp(1.2rem,3.8vw,1.65rem);
 }
 body.light{
   --bg:#f5f0e8;--card:#fff;--card2:#f0ebe0;--border:rgba(120,90,30,0.18);
@@ -777,7 +731,7 @@ function esc(s){return s?(s+"").replace(/&/g,"&amp;").replace(/</g,"&lt;").repla
 
 function _audioBtn(d, catId) {
   if (!d.dua) return '';
-  return '<button class="cbtn2" title="Luister recitatie" id="caudio" onclick="playDua(' + d.dua + ',' + JSON.stringify(catId) + ')">&#9654;</button>';
+  return '<button class="cbtn2" title="Luister recitatie" id="caudio" onclick=\'playDua(' + d.dua + ',\"' + catId + '\")\'>&#9654;</button>';
 }
 function renderDhikr(ci,di){
   var cats=allCats(),cat=cats[ci],d=cat.list[di],k=K(cat.id,di);
@@ -1596,7 +1550,6 @@ function audioToggle(){
     if(btn){btn.innerHTML="&#9654;";btn.classList.remove("active");}
   }
 }
-<script>
 function audioPrev(){
   if(_auIdx>0){_auIdx--;_auDua=_auList[_auIdx];var cat=allCats().find(function(c){return c.id===_auCat;});_startAudio(_auDua,cat);}
 }
@@ -1613,7 +1566,7 @@ function audioClose(){
 
 <div class="audio-bar" id="abBar">
   <div class="ab-progress"><span id="abProg"></span></div>
-  <div class="ab-ar" id="abText"></div> 
+  <div class="ab-ar" id="abAr"></div>
   <div class="ab-ctrl">
     <button onclick="audioPrev()">&#9664;</button>
     <button onclick="audioToggle()" id="abPlay">&#9654;</button>
@@ -1623,12 +1576,11 @@ function audioClose(){
 </div>
 
 <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log("Service Worker Geregistreerd!"))
-      .catch(err => console.log("Service Worker Fout:", err));
-  }
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js').catch(function(e){ console.log('SW reg failed:', e); });
+  });
+}
 </script>
-
 </body>
 </html>

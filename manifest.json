@@ -1,14 +1,30 @@
-"icons": [
-  {
-    "src": "icoon.png",
-    "sizes": "512x512",
-    "type": "image/webp",
-    "purpose": "any"
-  },
-  {
-    "src": "icoon.png",
-    "sizes": "192x192",
-    "type": "image/webp",
-    "purpose": "any"
-  }
-]
+{
+  "name": "Hisnul Muslim",
+  "short_name": "Hisn",
+  "description": "Vesting van de Moslim - Smeekbeden en Adhkar",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#07080f",
+  "theme_color": "#07080f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icoon.png",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "icoon.png",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "icoon.png",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "maskable"
+    }
+  ]
+}

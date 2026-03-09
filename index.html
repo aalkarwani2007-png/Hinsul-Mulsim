@@ -182,6 +182,18 @@ body.sepia .toolbar{background:rgba(42,31,15,.93);}
 .fav-card.dragging{opacity:.4;transform:scale(.97);}
 .drag-handle{color:var(--dim);cursor:grab;padding:0 6px 0 0;font-size:.9rem;flex-shrink:0;touch-action:none;user-select:none;}
 .drag-handle:active{cursor:grabbing;}
+/* LAYLATUL QADR CHECKLIST */
+.qadr-item{display:flex;align-items:flex-start;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border);cursor:pointer;border-radius:8px;transition:background .15s;}
+.qadr-item:active{background:var(--card2);}
+.qadr-finished{border-color:var(--goldD)!important;background:var(--goldG)!important;}
+.qadr-item:last-child{border-bottom:none;}
+.qadr-cb{width:20px;height:20px;border-radius:50%;border:2px solid var(--goldD);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;margin-top:1px;}
+.qadr-cb.done{background:var(--gold);border-color:var(--gold);}
+.qadr-cb.done::after{content:"✓";color:#000;font-size:.65rem;font-weight:700;}
+.qadr-text{flex:1;}
+.qadr-ar{font-family:"Scheherazade New",serif;font-size:1rem;color:var(--white);direction:rtl;text-align:right;line-height:1.6;}
+.qadr-tr{font-size:.58rem;color:var(--dim);margin-top:2px;}
+.qadr-rep{font-size:.55rem;color:var(--gold);margin-top:1px;font-weight:700;}
 /* AUDIO PLAYER */
 .audio-bar{position:fixed;bottom:0;left:0;right:0;background:var(--card2);border-top:2px solid var(--goldD);padding:8px 14px calc(14px + env(safe-area-inset-bottom,0px));display:none;z-index:200;align-items:center;gap:10px;}
 .audio-bar.show{display:flex;}
@@ -302,7 +314,11 @@ body.sepia .toolbar{background:rgba(42,31,15,.93);}
     <button class="nbtn" id="btnPrev" onclick="stepDhikr(-1)" disabled>&#8592; Vorige</button>
     <button class="nbtn pri" id="btnNext" onclick="stepDhikr(1)">Volgende &#8594;</button>
   </div>
-  <div class="dview" id="dview"></div>
+  <div id="qadrBanner" style="display:none;margin:0 10px 8px;background:var(--goldG);border:1px solid var(--goldD);border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;">
+  <span style="font-size:.62rem;color:var(--gold);">⭐ Laylatul Qadr Nacht</span>
+  <button onclick="showRamadan()" style="background:var(--gold);border:none;border-radius:8px;padding:4px 10px;font-size:.58rem;color:#000;font-weight:700;cursor:pointer;">🌙 Open Checklist</button>
+</div>
+<div class="dview" id="dview"></div>
 </div>
 
 <!-- FAVS SCREEN -->
@@ -358,6 +374,17 @@ body.sepia .toolbar{background:rgba(42,31,15,.93);}
     <div style="font-size:.52rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin:12px 0 6px;">Mijn Voortgang</div>
     <div id="ramadanStats" style="background:var(--card2);border-radius:10px;padding:10px;font-size:.65rem;color:var(--white);"></div>
     <button onclick="clearRamadan()" style="margin-top:12px;width:100%;padding:10px;background:none;border:1px solid var(--border);color:var(--dim);border-radius:10px;cursor:pointer;font-family:Nunito;font-size:.65rem;">↺ Tracker resetten</button>
+  <div id="qadrSection" style="margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div>
+        <div style="font-family:'Scheherazade New',serif;font-size:1.1rem;color:var(--gold);">لَيْلَةُ الْقَدْرِ</div>
+        <div id="qadrNightLabel" style="font-size:.55rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-top:1px;">Laylatul Qadr Checklist 🌙</div>
+      </div>
+      <button onclick="clearQadr()" style="background:none;border:1px solid var(--border);color:var(--dim);border-radius:8px;font-size:.55rem;padding:4px 8px;cursor:pointer;">↺ Reset</button>
+    </div>
+    <div id="qadrList"></div>
+    <div id="qadrProgress" style="margin-top:10px;font-size:.62rem;color:var(--goldD);text-align:center;"></div>
+  </div>
   </div>
 </div>
 <!-- SETTINGS PANEL -->
@@ -737,6 +764,9 @@ function _audioBtn(d, catId) {
 }
 function renderDhikr(ci,di){
   var cats=allCats(),cat=cats[ci],d=cat.list[di],k=K(cat.id,di);
+  // Show Ramadan tracker link for Laylatul Qadr category
+  var qadrBanner=document.getElementById("qadrBanner");
+  if(qadrBanner){qadrBanner.style.display=cat.id==="laylatul-qadr"?"block":"none";}
   var cnt=counters[k]||0,done=cnt>=d.rep,pct=Math.min((cnt/d.rep)*100,100);
   document.getElementById("btnPrev").disabled=(di===0);
   var bnxt=document.getElementById("btnNext");
@@ -942,6 +972,7 @@ document.addEventListener("keydown",function(e){if(e.code==="Space"&&document.ge
 
 // ── RAMADAN TRACKER ───────────────────────────────────────────────────
 function showRamadan(){
+  renderQadrList();
   setScreen("sRamadan","🌙","Ramadan Tracker",true);
   renderNights();
 }
@@ -950,17 +981,29 @@ function renderNights(){
   var stats=document.getElementById("ramadanStats");
   if(!grid)return;
   var done=JSON.parse(localStorage.getItem("ramNights")||"[]");
+  var active=localStorage.getItem("ramActiveNight")||null;
+  if(active)active=parseInt(active);
   var nights=[21,22,23,24,25,26,27,28,29,30];
   grid.innerHTML=nights.map(function(n){
     var checked=done.includes(n);
-    return'<div onclick="toggleNight('+n+')" style="background:'+(checked?'var(--goldG)':'var(--card2)')+';border:1px solid '+(checked?'var(--gold)':'var(--border)')+';border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;transition:all .2s;">'+
-      '<div style="font-size:1.1rem;">'+(checked?'✅':'🌙')+'</div>'+
-      '<div style="font-size:.6rem;color:'+(checked?'var(--gold)':'var(--dim)')+';margin-top:3px;">Nacht '+n+'</div>'+
+    var isActive=active===n;
+    var isOdd=(n%2!==0);
+    return'<div onclick="setActiveNight('+n+')" style="background:'+(isActive?'var(--gold)':checked?'var(--goldG)':'var(--card2)')+';border:2px solid '+(isActive?'var(--gold)':checked?'var(--gold)':isOdd?'rgba(201,168,76,.3)':'var(--border)')+';border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;transition:all .2s;position:relative;">'+
+      '<div style="font-size:1.1rem;">'+(isActive?'👆':checked?'✅':isOdd?'⭐':'🌙')+'</div>'+
+      '<div style="font-size:.58rem;color:'+(isActive?'#000':checked?'var(--gold)':isOdd?'var(--goldD)':'var(--dim)')+';margin-top:3px;font-weight:'+(isActive?'700':'400')+';">Nacht '+n+'</div>'+
     '</div>';
   }).join("");
-  stats.innerHTML='<strong>'+done.length+'/10</strong> nachten gegrepen'+
-    (done.length===10?' — مَاشَاءَ اللَّهُ 🎉':'')+'<br>'+
-    '<span style="color:var(--dim)">Reste: '+(10-done.length)+' nachten · Laylatul Qadr is oneven (21,23,25,27,29)</span>';
+  // Show active night qadr progress
+  var qadrDone=JSON.parse(localStorage.getItem("qadrDone")||"[]");
+  var activeLabel=active?"Nacht "+active+" geselecteerd 👆":"Tik op een nacht om te selecteren";
+  stats.innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">'+
+    '<span><strong>'+done.length+'/10</strong> nachten gegrepen'+(done.length===10?' 🎉':'')+'</span>'+
+    '<span style="color:var(--goldD);font-size:.58rem;">'+activeLabel+'</span>'+
+    '</div>'+
+    '<div style="margin-top:6px;color:var(--dim);font-size:.58rem;">Laylatul Qadr is oneven: 21, 23, 25, 27, 29 ⭐</div>'+
+    (active?'<div style="margin-top:8px;display:flex;gap:8px;"><button onclick="markNightDone('+active+')" style="flex:1;padding:7px;border-radius:8px;border:1px solid var(--goldD);background:var(--goldG);color:var(--gold);font-size:.62rem;cursor:pointer;">'+(done.includes(active)?'✅ Voltooid':'☑ Markeer als voltooid')+'</button>'+
+    '<button onclick="openQadrForNight('+active+')" style="flex:1;padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--white);font-size:.62rem;cursor:pointer;">🌙 Checklist openen</button></div>':'');
 }
 function toggleNight(n){
   var done=JSON.parse(localStorage.getItem("ramNights")||"[]");
@@ -969,6 +1012,34 @@ function toggleNight(n){
   localStorage.setItem("ramNights",JSON.stringify(done));
   renderNights();
   if(done.length===10)setTimeout(function(){launchConfetti();showToast("جَزَاكَ اللَّهُ خَيْرًا — Alle 10 nachten! 🎉");},200);
+}
+function setActiveNight(n){
+  var current=localStorage.getItem("ramActiveNight");
+  if(current&&parseInt(current)===n){
+    localStorage.removeItem("ramActiveNight");
+  } else {
+    localStorage.setItem("ramActiveNight",n);
+    if(S.haptic&&navigator.vibrate)navigator.vibrate(30);
+  }
+  renderNights();
+  renderQadrList();
+}
+function markNightDone(n){
+  var done=JSON.parse(localStorage.getItem("ramNights")||"[]");
+  if(!done.includes(n)){
+    done.push(n);
+    localStorage.setItem("ramNights",JSON.stringify(done));
+    if(S.haptic&&navigator.vibrate)navigator.vibrate([40,20,40]);
+    if(done.length===10)setTimeout(function(){launchConfetti();showToast("جَزَاكَ اللَّهُ خَيْرًا — Alle 10 nachten! 🎉");},200);
+  } else {
+    done=done.filter(function(x){return x!==n;});
+    localStorage.setItem("ramNights",JSON.stringify(done));
+  }
+  renderNights();
+}
+function openQadrForNight(n){
+  document.getElementById("qadrSection").scrollIntoView({behavior:"smooth"});
+  showToast("🌙 Nacht "+n+" checklist — vink af wat je hebt gelezen");
 }
 function clearRamadan(){
   localStorage.removeItem("ramNights");
@@ -1025,6 +1096,124 @@ function showToast(msg){var t=document.getElementById("toast");t.innerHTML=msg;t
 
 // ── INIT ──────────────────────────────────────────────────────────────
 loadS();loadC();applySettings();
+
+if ('serviceWorker' in navigator && location.hostname !== 'www.claudeusercontent.com') {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js').catch(function(e){ console.log('SW reg failed:', e); });
+  });
+}
+
+// ── LAYLATUL QADR CHECKLIST ────────────────────────────────────────
+var QADR_ITEMS = [
+  {ar:"اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي", tr:"Allahumma innaka ʿafuwwun tuhibbul-ʿafwa faʿfu ʿannī", rep:"×999"},
+  {ar:"الْحَمْدُ لِلَّهِ", tr:"Alhamdulillah", rep:"×99"},
+  {ar:"اللَّهُ أَكْبَر", tr:"Allahu Akbar", rep:"×99"},
+  {ar:"سُبْحَانَ اللَّهِ", tr:"Subhanallah", rep:"×99"},
+  {ar:"أَسْتَغْفِرُ اللَّهَ", tr:"Astaghfirullah", rep:"×99"},
+  {ar:"أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا رَسُولُ اللَّهِ", tr:"Ashhadu an lā ilāha illallāh, wa ashhadu anna Muḥammadan rasūlullāh", rep:"×99"},
+  {ar:"لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِير", tr:"Lā ilāha illallāhu waḥdahu lā sharīka lah, lahul-mulku wa lahul-ḥamdu wa huwa ʿalā kulli shayʾin qadīr", rep:"×99"},
+  {ar:"اللَّهُمَّ صَلِّ عَلَى مُحَمَّد", tr:"Allahumma ṣalli ʿalā Muḥammad", rep:"×99"},
+  {ar:"اللَّهُمَّ بَارِكْ عَلَى مُحَمَّد", tr:"Allahumma bārik ʿalā Muḥammad", rep:"×99"},
+  {ar:"سُورَةُ الْإِخْلَاص", tr:"Soera Al-Ikhlas (قُلْ هُوَ اللَّهُ أَحَد...)", rep:"×3"},
+  {ar:"سُورَةُ النَّاس", tr:"Soera An-Nas (قُلْ أَعُوذُ بِرَبِّ النَّاسِ...)", rep:"×3"},
+  {ar:"سُورَةُ الْفَلَق", tr:"Soera Al-Falaq (قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ...)", rep:"×3"},
+  {ar:"آيَةُ الْكُرْسِي", tr:"Ayat al-Kursi (اللَّهُ لَا إِلَهَ إِلَّا هُوَ...)", rep:"×7"},
+  {ar:"رَبِّ إِنِّي لِمَا أَنزَلْتَ إِلَيَّ مِنْ خَيْرٍ فَقِير", tr:"Rabbi innī limā anzalta ilayya min khayrin faqīr", rep:"×33"},
+  {ar:"لَا إِلَهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ الظَّالِمِين", tr:"Lā ilāha illā anta subḥānaka innī kuntu minaẓ-ẓālimīn", rep:"×33"},
+  {ar:"حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيم", tr:"Ḥasbiyallāhu lā ilāha illā huwa ʿalayhi tawakkaltu wa huwa rabbul-ʿarshil-ʿaẓīm", rep:"×33"},
+  {ar:"حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيل", tr:"Ḥasbunallāhu wa niʿmal-wakīl", rep:"×99"},
+  {ar:"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ سُبْحَانَ اللَّهِ الْعَظِيم", tr:"Subḥānallāhi wa biḥamdihi, subḥānallāhil-ʿaẓīm", rep:"×99"},
+  {ar:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّة", tr:"Allahumma innī asʾalukal-jannah", rep:"×33"},
+  {ar:"اللَّهُمَّ أَجِرْنِي مِنَ النَّار", tr:"Allahumma ajirni minan-nār", rep:"×33"},
+  {ar:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَة", tr:"Allahumma innī asʾalukal-ʿafwa wal-ʿāfiyah fid-dunyā wal-ākhirah", rep:"×33"}
+];
+
+function renderQadrList(){
+  var done = JSON.parse(localStorage.getItem("qadrDone")||"[]");
+  var cnts = JSON.parse(localStorage.getItem("qadrCounts")||"{}");
+  var active = localStorage.getItem("ramActiveNight");
+  var lbl = document.getElementById("qadrNightLabel");
+  if(lbl) lbl.textContent = active ? "Nacht "+active+" Checklist 🌙" : "Laylatul Qadr Checklist 🌙";
+  var html = QADR_ITEMS.map(function(item, i){
+    var isDone = done.includes(i);
+    var cnt = cnts[i]||0;
+    var target = parseInt(item.rep.replace("×",""))||1;
+    var pct = Math.min((cnt/target)*100,100);
+    var finished = cnt >= target;
+    return "<div class='qadr-item"+(finished?" qadr-finished":"")+"' style='flex-direction:column;align-items:stretch;padding:10px 6px;'>"+
+      "<div style='display:flex;align-items:flex-start;gap:10px;'>"+
+        "<div class='qadr-cb"+(isDone?" done":"")+"' onclick='event.stopPropagation();toggleQadr("+i+")' style='margin-top:3px;flex-shrink:0;'></div>"+
+        "<div style='flex:1;'>"+
+          "<div class='qadr-ar'>"+item.ar+"</div>"+
+          "<div class='qadr-tr'>"+item.tr+"</div>"+
+        "</div>"+
+      "</div>"+
+      // Counter bar
+      "<div style='margin-top:10px;background:var(--card2);border-radius:12px;padding:10px 12px;border:1px solid "+(finished?"var(--goldD)":"var(--border)")+";'>"+ 
+        "<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;'>"+
+          "<div style='display:flex;align-items:baseline;gap:4px;'>"+
+            "<span style='font-size:1.4rem;font-weight:700;color:"+(finished?"var(--gold)":"var(--white)")+"'>"+cnt+"</span>"+
+            "<span style='font-size:.58rem;color:var(--dim);'>/ "+target+"×</span>"+
+          "</div>"+
+          "<div style='display:flex;gap:6px;align-items:center;'>"+
+            "<button onclick='resetQadrCount("+i+")' style='background:none;border:none;color:var(--dim);font-size:.8rem;cursor:pointer;padding:4px;'>↺</button>"+
+            "<button onclick='qadrTik("+i+")' style='background:"+(finished?"var(--gold)":"var(--goldG)")+";border:1px solid var(--goldD);border-radius:10px;color:"+(finished?"#000":"var(--gold)")+";font-size:.7rem;font-weight:700;padding:8px 18px;cursor:pointer;transition:all .1s;'>"+
+              (finished?"✓ Klaar":"TIK")+
+            "</button>"+
+          "</div>"+
+        "</div>"+
+        // Progress bar
+        "<div style='height:4px;background:var(--border);border-radius:2px;overflow:hidden;'>"+
+          "<div style='height:100%;width:"+pct+"%;background:var(--gold);border-radius:2px;transition:width .3s;'></div>"+
+        "</div>"+
+      "</div>"+
+    "</div>";
+  }).join("");
+  var el = document.getElementById("qadrList");
+  if(el) el.innerHTML = html;
+  var finCount = QADR_ITEMS.filter(function(_,i){ var cn=cnts[i]||0; var t=parseInt(QADR_ITEMS[i].rep.replace("×",""))||1; return cn>=t; }).length;
+  var prog = document.getElementById("qadrProgress");
+  if(prog) prog.innerHTML = "<span style='color:var(--gold);font-weight:700;'>"+finCount+"</span> / "+QADR_ITEMS.length+" voltooid ✨ &nbsp;·&nbsp; "+done.length+" afgevinkt ☑";
+}
+
+function toggleQadr(i){
+  var done = JSON.parse(localStorage.getItem("qadrDone")||"[]");
+  var idx = done.indexOf(i);
+  if(idx >= 0) done.splice(idx,1); else done.push(i);
+  localStorage.setItem("qadrDone", JSON.stringify(done));
+  renderQadrList();
+  if(done.length === QADR_ITEMS.length) setTimeout(function(){launchConfetti();showToast("مَاشَاءَ اللَّهُ — Alles voltooid! 🎉");},200);
+}
+function qadrTik(i){
+  var cnts = JSON.parse(localStorage.getItem("qadrCounts")||"{}");
+  var target = parseInt(QADR_ITEMS[i].rep.replace("×",""))||1;
+  cnts[i] = (cnts[i]||0) + 1;
+  localStorage.setItem("qadrCounts", JSON.stringify(cnts));
+  if(S.haptic && navigator.vibrate) navigator.vibrate(15);
+  // Auto-check when target reached
+  if(cnts[i] >= target){
+    var done = JSON.parse(localStorage.getItem("qadrDone")||"[]");
+    if(!done.includes(i)){
+      done.push(i);
+      localStorage.setItem("qadrDone", JSON.stringify(done));
+      if(S.haptic && navigator.vibrate) navigator.vibrate([30,20,60]);
+      showToast("✓ "+QADR_ITEMS[i].rep+" bereikt! ☑");
+    }
+    if(done.length === QADR_ITEMS.length) setTimeout(function(){launchConfetti();showToast("مَاشَاءَ اللَّهُ — Alles voltooid! 🎉");},300);
+  }
+  renderQadrList();
+}
+function resetQadrCount(i){
+  var cnts = JSON.parse(localStorage.getItem("qadrCounts")||"{}");
+  cnts[i] = 0;
+  localStorage.setItem("qadrCounts", JSON.stringify(cnts));
+  renderQadrList();
+}
+
+function clearQadr(){
+  localStorage.removeItem("qadrDone");
+  renderQadrList();
+}
 </script>
 <script>
 var GROUPS=[
@@ -1410,7 +1599,12 @@ var GROUPS=[
 {ar:"ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللَّهُ",tr:"Dhahabadh-dhama'u wabtallatil-'uruqu wa thabatal-ajru insha'Allah",nl:"De dorst is gedoofd, de aderen zijn bevochtigd en de beloning is zeker, als Allah het wil.",en:"The thirst is gone, the veins are quenched, and the reward is confirmed, if Allah wills.",src:"Abu Dawud 2357",auth:"Hasan",narrator:"Abdullah ibn Umar (r.a.)",year:"",sabab:"Alternatieve dua bij de iftar — overgeleverd van de Profeet ﷺ zelf.",vir:"",rep:1,dua:169},
 {ar:"اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",tr:"Allahumma innaka 'Afuwwun tuhibbul-'afwa fa'fu 'anni",nl:"O Allah, U bent de Vergevende en houdt van vergiffenis, vergeef mij dus.",en:"O Allah, You are the Pardoner and You love to pardon, so pardon me.",src:"At-Tirmidhi 3513 | Ibn Majah",auth:"Sahih",narrator:"Aisha (r.a.)",year:"",sabab:"De Profeet ﷺ leerde Aisha (r.a.) dit als de dua van Laylatul Qadr — te herhalen in de laatste 10 nachten.",vir:"De meest geliefde dua in de nacht van Laylatul Qadr. (At-Tirmidhi Sahih)",rep:1,dua:238},
 {ar:"اللَّهُمَّ أَعِنِّي عَلَى صِيَامِهِ وَقِيَامِهِ",tr:"Allahumma a'inni ala siyamihi wa qiyamih",nl:"O Allah, help mij met het vasten en het nachtgebed van Ramadan.",en:"O Allah, help me to fast it and to pray at night during it.",src:"Ibn Khuzaymah | Al-Bayhaqi",auth:"Hasan",narrator:"",year:"",sabab:"Te lezen bij de aanvang van Ramadan als persoonlijk gebed.",vir:"",rep:1}
-]},
+,
+{ar:"اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",tr:"Allahumma innaka ʿafuwwun tuhibbul-ʿafwa faʿfu ʿannī",nl:"O Allah, U bent de Vergevende, U houdt van vergeven — vergeef mij. (Laylatul Qadr)",src:"Tirmidhi 3513",auth:"Sahih",rep:999},
+{ar:"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ سُبْحَانَ اللَّهِ الْعَظِيم",tr:"Subḥānallāhi wa biḥamdihi, subḥānallāhil-ʿaẓīm",nl:"Glorie zij Allah en Zijn lof, glorie zij Allah de Geweldige.",src:"Bukhari 6405",auth:"Sahih",rep:99},
+{ar:"لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِير",tr:"Lā ilāha illallāhu waḥdahu lā sharīka lah, lahul-mulku wa lahul-ḥamdu wa huwa ʿalā kulli shayʾin qadīr",nl:"Er is geen god dan Allah alleen, zonder deelgenoot. Hem behoort het koninkrijk.",src:"Bukhari 6403",auth:"Sahih",rep:99},
+{ar:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّةَ وَأَعُوذُ بِكَ مِنَ النَّار",tr:"Allahumma innī asʾalukal-jannata wa aʿūdhu bika minan-nār",nl:"O Allah, ik smeek U om het Paradijs en ik zoek mijn toevlucht bij U voor het Vuur.",src:"Abu Dawud 792",auth:"Sahih",rep:33},
+{ar:"حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيل",tr:"Ḥasbunallāhu wa niʿmal-wakīl",nl:"Allah is genoeg voor ons en Hij is de beste Beschermer.",src:"Al-Quran 3:173",auth:"Quran",rep:99}]},
 {id:"hajj",icon:"🕋",ar:"أَذْكَارُ الْحَجِّ",nl:"Hajj & Umrah",desc:"De essentiële smeekbeden voor de Hadj en Umrah — de vijfde zuil van de Islam.",list:[
 {ar:"لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ، لَبَّيْكَ لَا شَرِيكَ لَكَ لَبَّيْكَ، إِنَّ الْحَمْدَ وَالنِّعْمَةَ لَكَ وَالْمُلْكَ، لَا شَرِيكَ لَكَ",tr:"Labbayk-Allahumma labbayk, labbayka la sharika laka labbayk, innal-hamda wan-ni'mata laka wal-mulk, la sharika lak",nl:"Hier ben ik, O Allah, hier ben ik. Hier ben ik, U heeft geen deelgenoot, hier ben ik. Voorwaar, alle lof, gunst en heerschappij is voor U, U heeft geen deelgenoot.",en:"Here I am O Allah, here I am. Here I am, You have no partner, here I am. Verily all praise, grace and sovereignty belong to You, You have no partner.",src:"Al-Bukhari 2/545 | Muslim",auth:"Sahih",narrator:"Abdullah ibn Umar (r.a.)",year:"",sabab:"De Talbiyah — te reciteren van de ihram tot de Steniging van Djamarat.",vir:"",rep:1,dua:220},
 {ar:"سُبْحَانَ اللَّهِ وَالْحَمْدُ لِلَّهِ وَلَا إِلَهَ إِلَّا اللَّهُ وَاللَّهُ أَكْبَرُ",tr:"Subhanallahi wal-hamdulillahi wa la ilaha illallahu wallahu akbar",nl:"Heilig is Allah, alle lof voor Allah, er is geen god dan Allah, Allah is de Grootste (tijdens de tawaf).",en:"Glory be to Allah, all praise is for Allah, there is no god but Allah, Allah is the Greatest.",src:"Ahmad | Ibn Majah",auth:"Sahih",narrator:"",year:"",sabab:"Te zeggen tijdens de tawaf — er is geen specifiek vaste dua voor de tawaf anders dan dhikr en vrijebeden.",vir:"",rep:1,dua:221},
@@ -1421,6 +1615,45 @@ var GROUPS=[
 {ar:"بَارَكَ اللَّهُ لَكَ فِي الْمَوْهُوبِ لَكَ وَشَكَرْتَ الْوَاهِبَ وَبَلَغَ أَشُدَّهُ وَرُزِقْتَ بِرَّهُ",tr:"Barakallahu laka fil-mawhibi laka, wa shakarta-l-wahib, wa balagha ashuddahu, wa ruziqta birrah",nl:"Moge Allah jou zegenen in het geschenk dat aan jou gegeven is. Moge je de Schenker dankbaar zijn. Moge het kind volwassenheid bereiken en moge je zijn goedheid ontvangen.",en:"May Allah bless you with His gift to you, may you give thanks to the Giver, may he reach the age of maturity, and may you be granted his righteousness.",src:"Ibn Sunni | Al-Hasan al-Basri",auth:"Hasan",narrator:"Al-Hasan al-Basri (r.a.)",year:"",sabab:"Aan de ouders te zeggen bij de geboorte van een kind.",vir:"",rep:1,dua:180},
 {ar:"بَارَكَ اللَّهُ لَكَ وَبَارَكَ عَلَيْكَ وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ",tr:"Barakallahu laka wa baraka alayka wa jama'a baynakuma fi khayr",nl:"Moge Allah jou zegenen, moge Hij Zijn zegen over jou uitstorten en moge Hij jullie in het goede samenbrengen.",en:"May Allah bless you and shower His blessings upon you, and may He unite you both in goodness.",src:"Abu Dawud 2130 | At-Tirmidhi",auth:"Sahih",narrator:"Abu Huraira (r.a.)",year:"",sabab:"Gelukwens aan het huwelijkspaar — de Profeet ﷺ leerde dit in plaats van de Jahiliyyah-zegenwens.",vir:"",rep:1},
 {ar:"مَا شَاءَ اللَّهُ لَا قُوَّةَ إِلَّا بِاللَّهِ",tr:"Masha'Allah la quwwata illa billah",nl:"Wat Allah wil — er is geen kracht dan bij Allah (bij het zien van iets moois).",en:"What Allah wills, there is no power except with Allah.",src:"Al-Quran 18:39",auth:"Quran",narrator:"",year:"",sabab:"Te zeggen bij het bewonderen van iemands bezitting, kind, of uiterlijk — beschermt tegen het boze oog.",vir:"",rep:1}
+
+]},
+{id:"laylatul-qadr",icon:"⭐",ar:"لَيْلَةُ الْقَدْرِ",nl:"Laylatul Qadr",desc:"De Nacht der Bestemming — beter dan duizend maanden. Speciale dhikr en smeekbeden voor de laatste 10 nachten van Ramadan.",list:[
+{ar:"اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",tr:"Allahumma innaka ʿafuwwun tuhibbul-ʿafwa faʿfu ʿannī",nl:"O Allah, U bent de Vergevende, U houdt van vergeven — vergeef mij.",src:"Tirmidhi 3513",auth:"Sahih",rep:999},
+{ar:"سُبْحَانَ اللَّهِ",tr:"Subḥānallāh",nl:"Glorie zij Allah.",src:"Bukhari 6406",auth:"Sahih",rep:99},
+{ar:"الْحَمْدُ لِلَّهِ",tr:"Alḥamdulillāh",nl:"Alle lof zij Allah.",src:"Bukhari 6406",auth:"Sahih",rep:99},
+{ar:"اللَّهُ أَكْبَر",tr:"Allāhu Akbar",nl:"Allah is de Grootste.",src:"Bukhari 6406",auth:"Sahih",rep:99},
+{ar:"أَسْتَغْفِرُ اللَّهَ",tr:"Astaghfirullāh",nl:"Ik vraag Allah om vergeving.",src:"Bukhari 6307",auth:"Sahih",rep:99},
+{ar:"لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِير",tr:"Lā ilāha illallāhu waḥdahu lā sharīka lah, lahul-mulku wa lahul-ḥamdu wa huwa ʿalā kulli shayʾin qadīr",nl:"Er is geen god dan Allah alleen, zonder deelgenoot. Hem behoort het koninkrijk en alle lof.",src:"Bukhari 6403",auth:"Sahih",rep:99},
+{ar:"اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّد",tr:"Allāhumma ṣalli ʿalā Muḥammadin wa ʿalā āli Muḥammad",nl:"O Allah, zend Uw zegeningen op Muhammad en zijn nageslacht.",src:"Bukhari 3370",auth:"Sahih",rep:99},
+{ar:"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ سُبْحَانَ اللَّهِ الْعَظِيم",tr:"Subḥānallāhi wa biḥamdihi, subḥānallāhil-ʿaẓīm",nl:"Glorie zij Allah en Zijn lof, glorie zij Allah de Geweldige.",src:"Bukhari 6405",auth:"Sahih",rep:99},
+{ar:"حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيل",tr:"Ḥasbunallāhu wa niʿmal-wakīl",nl:"Allah is genoeg voor ons en Hij is de beste Beschermer.",src:"Al-Quran 3:173",auth:"Quran",rep:99},
+{ar:"لَا إِلَهَ إِلَّا أَنتَ سُبْحَانَكَ إِنِّي كُنتُ مِنَ الظَّالِمِين",tr:"Lā ilāha illā anta subḥānaka innī kuntu minaẓ-ẓālimīn",nl:"Er is geen god dan U, glorie zij U — waarlijk ik behoorde tot de onrechtvaardigen.",src:"Al-Quran 21:87",auth:"Quran",rep:33},
+{ar:"رَبِّ إِنِّي لِمَا أَنزَلْتَ إِلَيَّ مِنْ خَيْرٍ فَقِير",tr:"Rabbi innī limā anzalta ilayya min khayrin faqīr",nl:"Mijn Heer, waarlijk ik heb behoefte aan wat goeds dat U mij zendt.",src:"Al-Quran 28:24",auth:"Quran",rep:33},
+{ar:"حَسْبِيَ اللَّهُ لَا إِلَهَ إِلَّا هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيم",tr:"Ḥasbiyallāhu lā ilāha illā huwa ʿalayhi tawakkaltu wa huwa rabbul-ʿarshil-ʿaẓīm",nl:"Allah is genoeg voor mij, er is geen god dan Hij. Op Hem vertrouw ik, Hij is de Heer van de geweldige Troon.",src:"Al-Quran 9:129",auth:"Quran",rep:33},
+{ar:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّةَ وَأَعُوذُ بِكَ مِنَ النَّار",tr:"Allāhumma innī asʾalukal-jannata wa aʿūdhu bika minan-nār",nl:"O Allah, ik smeek U om het Paradijs en ik zoek mijn toevlucht bij U voor het Vuur.",src:"Abu Dawud 792",auth:"Sahih",rep:33},
+{ar:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَة",tr:"Allāhumma innī asʾalukal-ʿafwa wal-ʿāfiyah fid-dunyā wal-ākhirah",nl:"O Allah, ik smeek U om vergeving en welzijn in dit leven en het Hiernamaals.",src:"Abu Dawud 5074",auth:"Sahih",rep:33},
+{ar:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى",tr:"Allāhumma innī asʾalukal-hudā wat-tuqā wal-ʿafāfa wal-ghinā",nl:"O Allah, ik smeek U om leiding, vroomheid, kuisheid en tevredenheid.",src:"Muslim 2721",auth:"Sahih",rep:33},
+{ar:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْفِرْدَوْسَ الْأَعْلَى مِنَ الْجَنَّةِ بِلَا حِسَابٍ",tr:"Allāhumma innī asʾalukal-firdawsal-aʿlā minal-jannati bilā ḥisāb",nl:"O Allah, ik smeek U om het hoogste Paradijs zonder afrekening.",src:"overlevering",auth:"Hasan",rep:33},
+{ar:"رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا",tr:"Rabbi ighfir lī wa li-wālidayya warḥamhumā kamā rabbayānī ṣaghīrā",nl:"Mijn Heer, vergeef mij en mijn ouders, en wees hen genadig zoals zij mij opvoedden als kind.",src:"Al-Quran 17:24",auth:"Quran",rep:33},
+{ar:"اللَّهُمَّ ارْزُقْنِي رِزْقًا حَلَالًا طَيِّبًا وَبَارِكْ لِي فِيهِ",tr:"Allāhumma urzuqnī rizqan ḥalālan ṭayyiban wa bārik lī fīh",nl:"O Allah, voorzien mij van halal en goed levensonderhoud en zegen het voor mij.",src:"overlevering",auth:"Hasan",rep:33},
+{ar:"رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",tr:"Rabbanā ātinā fid-dunyā ḥasanatan wa fil-ākhirati ḥasanatan wa qinā ʿadhāban-nār",nl:"Onze Heer, geef ons het goede in dit leven en het goede in het Hiernamaals en bescherm ons voor de straf van het Vuur.",src:"Al-Quran 2:201",auth:"Quran",rep:33},
+{ar:"رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا",tr:"Rabbanā hab lanā min azwājinā wa dhurriyyātinā qurrata aʿyunin wajʿalnā lil-muttaqīna imāmā",nl:"Onze Heer, schenk ons van onze echtgenoten en nakomelingen vreugde voor onze ogen en maak ons tot een voorbeeld voor de godsvruchtigen.",src:"Al-Quran 25:74",auth:"Quran",rep:33},
+{ar:"رَبِّ هَبْ لِي مِنَ الصَّالِحِينَ",tr:"Rabbi hab lī minaṣ-ṣāliḥīn",nl:"Mijn Heer, schenk mij rechtschapen nageslacht.",src:"Al-Quran 37:100",auth:"Quran",rep:33},
+{ar:"اللَّهُمَّ اغْفِرْ لِي ذُنُوبِي كُلَّهَا، دِقَّهَا وَجِلَّهَا، أَوَّلَهَا وَآخِرَهَا، عَلَانِيَتَهَا وَسِرَّهَا",tr:"Allāhummaghfir lī dhunūbī kullahā, diqqahā wa jillahā, awwalahā wa ākhirahā, ʿalāniyatahā wa sirrahā",nl:"O Allah, vergeef al mijn zonden — de kleine en de grote, de eerste en de laatste, de openbare en de verborgen.",src:"Muslim 483",auth:"Sahih",rep:33},
+{ar:"اللَّهُمَّ أَجِرْنِي مِنَ النَّارِ",tr:"Allāhumma ajirni minan-nār",nl:"O Allah, bescherm mij van het Vuur.",src:"Abu Dawud 5079",auth:"Sahih",rep:7},
+{ar:"يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ",tr:"Yā muqallibal-qulūbi thabbit qalbī ʿalā dīnik",nl:"O Omwender van harten, maak mijn hart standvastig op Uw religie.",src:"Tirmidhi 3522",auth:"Sahih",rep:33},
+{ar:"اللَّهُمَّ أَلْهِمْنِي رُشْدِي وَأَعِذْنِي مِنْ شَرِّ نَفْسِي",tr:"Allāhumma alhimnī rushdī wa aʿidhnī min sharri nafsī",nl:"O Allah, inspireer mij met rechtschapenheid en bescherm mij voor het kwaad van mijn ziel.",src:"Tirmidhi 3483",auth:"Sahih",rep:33},
+{ar:"رَبِّ اغْفِرْ لِي وَتُبْ عَلَيَّ إِنَّكَ أَنتَ التَّوَّابُ الْغَفُورُ",tr:"Rabbi ighfir lī wa tub ʿalayya innaka antat-tawwābul-ghafūr",nl:"Mijn Heer, vergeef mij en aanvaard mijn berouw, waarlijk U bent de Aanvaarde van berouw, de Vergevende.",src:"Abu Dawud 1516",auth:"Sahih",rep:100},
+{ar:"اللَّهُمَّ أَعِنَّا عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ",tr:"Allāhumma aʿinnā ʿalā dhikrika wa shukrika wa ḥusni ʿibādatik",nl:"O Allah, help ons U te gedenken, U dankbaar te zijn en U op de beste manier te aanbidden.",src:"Abu Dawud 1522",auth:"Sahih",rep:33},
+{ar:"اللَّهُمَّ حَاسِبْنِي حِسَابًا يَسِيرًا",tr:"Allāhumma ḥāsibnī ḥisāban yasīrā",nl:"O Allah, stel mij ter verantwoording met een gemakkelijke afrekening.",src:"Ahmad 24498",auth:"Sahih",rep:33},
+{ar:"اللَّهُمَّ فَقِّهْنِي فِي الدِّينِ",tr:"Allāhumma faqqihnī fid-dīn",nl:"O Allah, geef mij begrip in de religie.",src:"Bukhari 143",auth:"Sahih",rep:33},
+{ar:"اللَّهُمَّ اهْدِنَا فِيمَنْ هَدَيْتَ، وَعَافِنَا فِيمَنْ عَافَيْتَ، وَتَوَلَّنَا فِيمَنْ تَوَلَّيْتَ، وَبَارِكْ لَنَا فِيمَا أَعْطَيْتَ، وَقِنَا شَرَّ مَا قَضَيْتَ",tr:"Allāhumma hdina fīman hadayt, wa ʿāfinā fīman ʿāfayt, wa tawallanā fīman tawallayt, wa bārik lanā fīmā aʿṭayt, wa qinā sharra mā qaḍayt",nl:"O Allah, leid ons onder degenen die U hebt geleid, bescherm ons onder degenen die U hebt beschermd, zorg voor ons onder degenen voor wie U zorgt, zegen voor ons wat U ons hebt gegeven en bescherm ons voor het kwaad van wat U heeft bestemd.",src:"Tirmidhi 464",auth:"Sahih",rep:3},
+{ar:"اللَّهُمَّ إِنَّا نَسْأَلُكَ بِاسْمِكَ الْأَعْظَمِ وَبِوَجْهِكَ الْأَكْرَمِ أَنْ تُنَزِّلَ عَلَيْنَا رَحْمَةً مِنْ عِنْدِكَ تَهْدِي بِهَا قُلُوبَنَا وَتَشْرَحُ بِهَا صُدُورَنَا وَتَتُوبُ بِهَا غَائِبَنَا وَتَجْمَعُ بِهَا شَعَثَنَا وَتُبَارِكُ بِهَا أَعْمَالَنَا وَتَرْحَمُ بِهَا مَيِّتَنَا وَتَكْشِفُ بِهَا مَرِيضَنَا وَتُدْخِلُنَا بِهَا الْجَنَّةَ وَتُنْجِينَا بِهَا مِنَ النَّارِ بِرَحْمَتِكَ يَا عَزِيزُ يَا غَفَّارُ",tr:"Allāhumma innā nasʾaluka bismika al-aʿẓam wa bi-wajhikal-akram an tunazzila ʿalaynā raḥmatan min ʿindik...",nl:"O Allah, wij vragen U bij Uw Grootste Naam en Uw Meest Edelmoedig Gelaat om een genade van U te zenden die onze harten leidt, onze borsten opent, onze afwezigen terugbrengt, onze zaken samenbrengt, onze daden zegent, onze overledenen genadig is, onze zieken geneest, ons het Paradijs binnenleidt en ons redt van het Vuur.",src:"overlevering",auth:"Hasan",rep:3},
+{ar:"اللَّهُمَّ لَا تَدَعْ لَنَا ذَنْبًا إِلَّا غَفَرْتَهُ وَلَا هَمًّا إِلَّا فَرَّجْتَهُ وَلَا كَرْبًا إِلَّا نَفَّسْتَهُ وَلَا دَيْنًا إِلَّا قَضَيْتَهُ وَلَا مَرِيضًا إِلَّا شَفَيْتَهُ وَلَا مُبْتَلًى إِلَّا عَافَيْتَهُ وَلَا حَاجَةً مِنْ حَوَائِجِ الدُّنْيَا وَالْآخِرَةِ إِلَّا أَعَنْتَنَا عَلَى قَضَائِهَا",tr:"Allāhumma lā tadaʿ lanā dhanban illā ghafartah, wa lā hamman illā farrajtah, wa lā karban illā naffastah...",nl:"O Allah, laat voor ons geen zonde onvergeven, geen verdriet onverlicht, geen last ongenomen, geen schuld onbetaald, geen zieke ongenezen, geen beproefde zonder Uw genezenis, en geen behoefte van dit leven of het Hiernamaals waaraan U ons niet helpt.",src:"overlevering",auth:"Hasan",rep:3},
+{ar:"رَبَّنَا إِنَّنَا آمَنَّا فَاغْفِرْ لَنَا ذُنُوبَنَا وَقِنَا عَذَابَ النَّارِ",tr:"Rabbanā innanā āmannā faghfir lanā dhunūbanā wa qinā ʿadhāban-nār",nl:"Onze Heer, wij geloven, vergeef ons onze zonden en bescherm ons voor de straf van het Vuur.",src:"Al-Quran 3:16",auth:"Quran",rep:33},
+{ar:"رَبَّنَا اغْفِرْ لَنَا ذُنُوبَنَا وَإِسْرَافَنَا فِي أَمْرِنَا",tr:"Rabbanā aghfir lanā dhunūbanā wa isrāfanā fī amrinā",nl:"Onze Heer, vergeef ons onze zonden en onze buitensporigheden in onze zaken.",src:"Al-Quran 3:147",auth:"Quran",rep:33},
+{ar:"رَبَّنَا آمَنَّا فَاغْفِرْ لَنَا وَارْحَمْنَا وَأَنتَ خَيْرُ الرَّاحِمِينَ",tr:"Rabbanā āmannā faghfir lanā warḥamnā wa anta khayrul-rāḥimīn",nl:"Onze Heer, wij geloven, vergeef ons en wees ons genadig, U bent de Beste der barmhartigen.",src:"Al-Quran 23:109",auth:"Quran",rep:33},
+{ar:"رَبَّنَا ظَلَمْنَا أَنفُسَنَا وَإِن لَّمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا لَنَكُونَنَّ مِنَ الْخَاسِرِينَ",tr:"Rabbanā ẓalamnā anfusanā wa in lam taghfir lanā wa tarḥamnā lanakūnanna minal-khāsirīn",nl:"Onze Heer, wij hebben onszelf onrecht aangedaan, en als U ons niet vergeeft en ons niet genadig bent, zullen wij zeker tot de verliezers behoren.",src:"Al-Quran 7:23",auth:"Quran",rep:33}
 ]}
 ]}
 ,{icon:"🏮",title:"HOE VOEL JE JE?",ar:"كَيْفَ تَشْعُرُ؟",sub:"Dua's op basis van jouw Gevoel",cats:[
@@ -1578,7 +1811,7 @@ function audioClose(){
 </div>
 
 <script>
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && location.hostname !== 'www.claudeusercontent.com') {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('sw.js').catch(function(e){ console.log('SW reg failed:', e); });
   });
